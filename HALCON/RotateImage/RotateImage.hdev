@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="20.11.2.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>* initialize framegrabber for HDevelop</c>
+<c>* this is not required for execution in ibaVision</c>
+<l>open_framegrabber('Iba', 0, 0, 0, 0, 0, 0, 'progressive', 8, 'rgb', 'live', 'false', '127.0.0.1\\user\\pass', 'Camera Name', 0, 0, AcqHandle)</l>
+<l>grab_image_start(AcqHandle, -1)</l>
+<c></c>
+<c>* initialize variable for HDevelop tests</c>
+<l>degrees := 45</l>
+<l>digitalIn := 0</l>
+<l>textInput := 'Test:12345'</l>
+<c></c>
+<c>* this has to be set as init procedure in ibaVision</c>
+<l>ibaVision_init (Rectangle, 1280, 720, BufferHandle)</l>
+<c></c>
+<c>* loop is only required in HDevelop</c>
+<l>while (true)</l>
+<c>    * grab image from framegrabber for HDevelop</c>
+<l>    grab_image_async(Image, AcqHandle, -1)</l>
+<c>    </c>
+<c>    * this has to be set as main procedure in ibaVision</c>
+<l>    ibaVision_main (Image, Rectangle, OutputImage, BufferHandle, degrees, digitalIn, textInput, Mean, TextOutput, digitalOut)</l>
+<l>endwhile</l>
+<c></c>
+<c>* this has to be set as cleanup procedure in ibaVision</c>
+<l>ibaVision_cleanup (BufferHandle)</l>
+<c></c>
+<c>* clean up framegrabber resources (only HDevelop)</c>
+<l>close_framegrabber(AcqHandle)</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="ibaVision_init">
+<interface>
+<oo>
+<par name="Rectangle" base_type="iconic" dimension="0"/>
+</oo>
+<ic>
+<par name="image_width" base_type="ctrl" dimension="0"/>
+<par name="image_height" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="BufferHandle" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>global def tuple g_maincounter</l>
+<c></c>
+<l>set_system('width', image_width)</l>
+<l>set_system('height', image_height)</l>
+<c></c>
+<c>* open log file</c>
+<l>LogFileName := './log/ibaVision_example.txt'</l>
+<l>iba_create_log(LogFileName, ' ==== ibaVision example log ==== ', 'True')</l>
+<l>iba_write_log('Debug', 'Starting initialization procedure')</l>
+<c></c>
+<c>* initialize global maincounter</c>
+<l>g_maincounter := 0</l>
+<c></c>
+<c>* try-catch block to handle exceptions internally</c>
+<l>try</l>
+<c>    * create rectangular region for brightness evaluation</c>
+<l>    gen_rectangle1(Rectangle, 0, 0, image_height - 1, image_width - 1)</l>
+<c>    </c>
+<c>    * initialize buffer for writing images</c>
+<l>    open_window(0, 0, image_width, image_height, 0, 'buffer', '', BufferHandle)</l>
+<l>catch (Exception)</l>
+<c>    * log example for exceptions</c>
+<l>    dev_get_exception_data (Exception, 'error_message', Message)</l>
+<l>    iba_write_log ('Exception', 'Exception in ibaVision_init: ' + Message)</l>
+<l>    dev_get_exception_data (Exception, 'procedure', proc)</l>
+<l>    dev_get_exception_data (Exception, 'program_line', line)</l>
+<l>    iba_write_log ('Exception', 'Exception in ibaVision_init: procedure ' + proc + ', line ' + line)</l>
+<l>endtry</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="ibaVision_init">
+<parameters>
+<parameter id="BufferHandle"/>
+<parameter id="Rectangle"/>
+<parameter id="image_height">
+<default_type>integer</default_type>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<sem_type>integer</sem_type>
+<type_list>
+<item>integer</item>
+</type_list>
+</parameter>
+<parameter id="image_width">
+<default_type>integer</default_type>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<sem_type>integer</sem_type>
+<type_list>
+<item>integer</item>
+</type_list>
+</parameter>
+</parameters>
+</docu>
+</procedure>
+<procedure name="ibaVision_cleanup">
+<interface>
+<ic>
+<par name="BufferHandle" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<l>try</l>
+<l>    close_window(BufferHandle)</l>
+<c>    </c>
+<l>    iba_write_log('Debug', 'Finished cleanup procedure')</l>
+<l>catch (Exception)</l>
+<c>    * log example for exceptions</c>
+<l>    dev_get_exception_data (Exception, 'error_message', Message)</l>
+<l>    iba_write_log ('Exception', 'Exception in ibaVision_cleanup: ' + Message)</l>
+<l>    dev_get_exception_data (Exception, 'procedure', proc)</l>
+<l>    dev_get_exception_data (Exception, 'program_line', line)</l>
+<l>    iba_write_log ('Exception', 'Exception in ibaVision_cleanup: procedure ' + proc + ', line ' + line)</l>
+<l>endtry</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="ibaVision_cleanup">
+<parameters>
+<parameter id="BufferHandle"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="ibaVision_main">
+<interface>
+<io>
+<par name="Image" base_type="iconic" dimension="0"/>
+<par name="Rectangle" base_type="iconic" dimension="0"/>
+</io>
+<oo>
+<par name="OutputImage" base_type="iconic" dimension="0"/>
+</oo>
+<ic>
+<par name="BufferHandle" base_type="ctrl" dimension="0"/>
+<par name="degrees" base_type="ctrl" dimension="0"/>
+<par name="digitalIn" base_type="ctrl" dimension="0"/>
+<par name="textInput" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="brightness" base_type="ctrl" dimension="0"/>
+<par name="textOutput" base_type="ctrl" dimension="0"/>
+<par name="digitalOut" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>global tuple g_maincounter</l>
+<c></c>
+<l>digitalOut := digitalIn</l>
+<c></c>
+<l>try</l>
+<c>    * count number of procedure executions</c>
+<l>    if(g_maincounter &gt; 9999999)</l>
+<l>        g_maincounter := 0</l>
+<l>    else</l>
+<l>        g_maincounter := g_maincounter + 1</l>
+<l>    endif</l>
+<c>    </c>
+<c>    * prepare input image</c>
+<l>*     zoom_image_size(Image, ImageZoom, 640, 640, 'constant')</l>
+<l>    count_channels (Image, Channels)</l>
+<c>    </c>
+<c>    * external procedure</c>
+<l>    x_to_gray (Image, ImageGray)</l>
+<l>    count_channels (Image, Channels)</l>
+<c>    </c>
+<c>    * determine brightness</c>
+<l>    intensity (Rectangle, ImageGray, brightness, Deviation)</l>
+<c>    </c>
+<c>    * rotate image</c>
+<l>    rotate_image (Image, ImageRotate, degrees, 'nearest_neighbor')</l>
+<c>    </c>
+<c>    * build textOutput</c>
+<l>    textOutput := 'Maincnt ' + g_maincounter$'10d' + ' | Int ' + brightness$'8.2f' + ' | Dig In ' + digitalIn + ' | ' + textInput</l>
+<c>    </c>
+<c>    * write image to buffer</c>
+<l>    clear_window(BufferHandle)</l>
+<l>    disp_obj (ImageRotate, BufferHandle)</l>
+<c>    </c>
+<c>    * write text to buffer</c>
+<l>    disp_message(BufferHandle, textOutput, 'window', 24, 24, 'black', 'true')</l>
+<c>    </c>
+<c>    * get image from buffer</c>
+<l>    dump_window_image(OutputImage, BufferHandle)</l>
+<l>catch (Exception)</l>
+<c>    * log example for exceptions</c>
+<l>    dev_get_exception_data (Exception, 'error_message', Message)</l>
+<l>    iba_write_log ('Exception', 'Exception in ibaVision_main: ' + Message)</l>
+<l>    dev_get_exception_data (Exception, 'procedure', proc)</l>
+<l>    dev_get_exception_data (Exception, 'program_line', line)</l>
+<l>    iba_write_log ('Exception', 'Exception in ibaVision_main: procedure ' + proc + ', line ' + line)</l>
+<l>endtry</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="ibaVision_main">
+<parameters>
+<parameter id="BufferHandle"/>
+<parameter id="Image">
+<description lang="en_US">Input image</description>
+<multichannel>optional</multichannel>
+<multivalue>false</multivalue>
+<sem_type>image</sem_type>
+<type_list>
+<item>byte</item>
+</type_list>
+</parameter>
+<parameter id="OutputImage">
+<description lang="en_US">output image for virtual camera</description>
+<multichannel>optional</multichannel>
+<multivalue>false</multivalue>
+<sem_type>image</sem_type>
+<type_list>
+<item>byte</item>
+</type_list>
+</parameter>
+<parameter id="Rectangle">
+<description lang="en_US">generated in ibaVision_init</description>
+<multivalue>false</multivalue>
+<sem_type>region</sem_type>
+</parameter>
+<parameter id="brightness">
+<sem_type>real</sem_type>
+</parameter>
+<parameter id="degrees">
+<sem_type>angle.deg</sem_type>
+</parameter>
+<parameter id="digitalIn"/>
+<parameter id="digitalOut"/>
+<parameter id="textInput"/>
+<parameter id="textOutput"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>
