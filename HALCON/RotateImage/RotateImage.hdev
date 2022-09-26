@@ -171,8 +171,14 @@
 <l>*     zoom_image_size(Image, ImageZoom, 640, 640, 'constant')</l>
 <l>    count_channels (Image, Channels)</l>
 <c>    </c>
-<c>    * external procedure</c>
-<l>    x_to_gray (Image, ImageGray)</l>
+<c>    * reduce RGB images to gray if necessary</c>
+<l>    count_channels (Image, Channels)</l>
+<l>    if(Channels == 3)</l>
+<l>        rgb1_to_gray (Image, ImageGray)</l>
+<l>    else</l>
+<l>        copy_image (Image, ImageGray)</l>
+<l>    endif</l>
+<c></c>
 <l>    count_channels (Image, Channels)</l>
 <c>    </c>
 <c>    * determine brightness</c>
